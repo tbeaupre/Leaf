@@ -18,10 +18,19 @@ namespace Leaf
 	{
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
+		Leaf leaf = new Leaf();
+		Texture2D leafTexture;
+		Texture2D vectorTexture;
 
 		public Game1()
 		{
 			graphics = new GraphicsDeviceManager(this);
+
+			graphics.PreferredBackBufferWidth = ScreenData.Get().GetFullScreenWidth();
+			graphics.PreferredBackBufferHeight = ScreenData.Get().GetFullScreenHeight();
+			//graphics.IsFullScreen = true;
+
+			graphics.ApplyChanges();
 			Content.RootDirectory = "Content";
 		}
 
@@ -34,7 +43,8 @@ namespace Leaf
 		protected override void Initialize()
 		{
 			// TODO: Add your initialization logic here
-
+			leafTexture = Content.Load<Texture2D>("leaf");
+			vectorTexture = Content.Load<Texture2D>("Vector");
 			base.Initialize();
 		}
 
@@ -67,11 +77,11 @@ namespace Leaf
 		protected override void Update(GameTime gameTime)
 		{
 			// Allows the game to exit
-			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+			if (Keyboard.GetState().IsKeyDown(Keys.Escape))
 				this.Exit();
 
-			// TODO: Add your update logic here
-
+			leaf.Update(); // Updates the player's leaf.
+			
 			base.Update(gameTime);
 		}
 
@@ -81,11 +91,23 @@ namespace Leaf
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Draw(GameTime gameTime)
 		{
+			spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 			GraphicsDevice.Clear(Color.CornflowerBlue);
 
-			// TODO: Add your drawing code here
+			//spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.x, (int)leaf.y, leafTexture.Width, leafTexture.Height), Color.White);
+			spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.x, (int)leaf.y, leafTexture.Width, leafTexture.Height), null, Color.White, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
+
+			//DrawVector(leaf.acc, Color.Red);
+			//DrawVector(leaf.vel, Color.Blue);
+			//DrawVector(leaf.gravity, Color.Black);
 
 			base.Draw(gameTime);
+			spriteBatch.End();
+		}
+
+		public void DrawVector(PhysicsVector vec, Color color)
+		{
+			spriteBatch.Draw(vectorTexture, new Rectangle((int)leaf.x, (int)leaf.y, (int)(vec.magnitude * 1000), vectorTexture.Height), null, color, (float)vec.direction.val, new Vector2(0, 0), SpriteEffects.None, 0);
 		}
 	}
 }
