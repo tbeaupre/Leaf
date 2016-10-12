@@ -29,5 +29,10 @@ namespace Leaf
 		{
 			return new Vector2((float)(magnitude * Math.Cos(direction.val)), (float)(magnitude * Math.Sin(direction.val))); 
 		}
+
+		public void Invert()
+		{
+			this.direction += Math.PI;
+		}
 	}
 }

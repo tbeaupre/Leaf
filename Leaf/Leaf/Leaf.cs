@@ -16,7 +16,9 @@ namespace Leaf
 		public PhysicsVector acc;
 		public PhysicsVector vel;
 		public PhysicsVector gravity;
-		Vector2 anchor;
+		public Vector2 anchor;
+		bool tangentMode = false;
+		public KeyHandler keyHandler;
 		
 		public Leaf()
 		{
@@ -31,46 +33,61 @@ namespace Leaf
 		public void Update()
 		{
 			KeyHandling();
-			UpdateAcceleration();
 
-			vel += acc;
-			x += vel.ConvertToCartesian().X;
-			y += vel.ConvertToCartesian().Y;
+			if (tangentMode == false)
+			{
+				UpdateAcceleration();
+				vel += acc;
+			}
+
+			Vector2 velCart = vel.ConvertToCartesian();
+			x += velCart.X;
+			y += velCart.Y;
+
+			if (tangentMode)
+			{
+				anchor += vel.ConvertToCartesian();
+			}
 
 			UpdateAngle();
-
-			// Old Shit
-			//speedFactor = Math.Pow(Math.Cos(angle), 2);
-			////speedFactor = Math.Cos(angle);
-
-			//if (angle <= -Math.PI / 2 + Math.PI / 6 || angle >= Math.PI / 2 - Math.PI / 6)
-			//{
-			//	speed *= -1;
-			//}
-			//x += speedFactor * speed * Math.Cos(angle);
-			//double deltaY = speedFactor * speed * Math.Sin(angle);
-			//y += deltaY;	
-			
-			//angle -= angleDelta * Math.Sign(speed); // Update the angle
+			ReduceVelocity();
 		}
 
 		void KeyHandling()
 		{
-			if (Keyboard.GetState().IsKeyDown(Keys.Up))
+			keyHandler = KeyHandler.Get();
+			if (keyHandler.IsKeyHeld(Keys.Up))
 			{
+				// Moves the pendulum anchor point away from the leaf.
 				float distance = 10;
 				anchor.X -= (float)(distance * Math.Cos(angle.val + (Math.PI / 2)));
 				anchor.Y -= (float)(distance * Math.Sin(angle.val + (Math.PI / 2)));
 			}
-			if (Keyboard.GetState().IsKeyDown(Keys.Down))
+			if (keyHandler.IsKeyHeld(Keys.Down))
 			{
-				float distance = 10;
-				anchor.X += (float)(distance * Math.Cos(angle.val + (Math.PI / 2)));
-				anchor.Y += (float)(distance * Math.Sin(angle.val + (Math.PI / 2)));
+				// Moves the pendulum anchor point towards the leaf.
+				Vector2 currentPos = new Vector2(x, y);
+				double radius = Vector2.Distance(currentPos, anchor);
+
+				if (radius > 50)
+				{
+					float distance = 10;
+					anchor.X += (float)(distance * Math.Cos(angle.val + (Math.PI / 2)));
+					anchor.Y += (float)(distance * Math.Sin(angle.val + (Math.PI / 2)));
+				}
 			}
-			if (Keyboard.GetState().IsKeyDown(Keys.Space))
+			if (keyHandler.IsKeyHeld(Keys.Space))
 			{
+				// Provides a bit of a speed boost.
 				vel.magnitude += .1;
+			}
+			if (keyHandler.IsKeyJustPressed(Keys.Z))
+			{
+				// Flips the leaf.
+				float deltaX = anchor.X - x;
+				float deltaY = anchor.Y - y;
+				anchor.X -= (deltaX * 2);
+				anchor.Y -= (deltaY * 2);
 			}
 		}
 
@@ -90,6 +107,12 @@ namespace Leaf
 			Vector2 currentPos = new Vector2(x, y);
 			Vector2 delta = Vector2.Subtract(anchor, currentPos);
 			angle = Math.Atan2(delta.Y, delta.X) + (Math.PI / 2);
+		}
+
+		void ReduceVelocity()
+		{
+			if (vel.magnitude > 0)
+				vel.magnitude -= .001;
 		}
 	}
 }
