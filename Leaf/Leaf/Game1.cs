@@ -21,6 +21,7 @@ namespace Leaf
 		Leaf leaf = new Leaf();
 		Texture2D leafTexture;
 		Texture2D vectorTexture;
+		Texture2D anchorTexture;
 
 		public Game1()
 		{
@@ -45,6 +46,7 @@ namespace Leaf
 			// TODO: Add your initialization logic here
 			leafTexture = Content.Load<Texture2D>("leaf");
 			vectorTexture = Content.Load<Texture2D>("Vector");
+			anchorTexture = Content.Load<Texture2D>("Anchor");
 			base.Initialize();
 		}
 
@@ -80,6 +82,7 @@ namespace Leaf
 			if (Keyboard.GetState().IsKeyDown(Keys.Escape))
 				this.Exit();
 
+			KeyHandler.Get().UpdateKeyboardHandler();
 			leaf.Update(); // Updates the player's leaf.
 			
 			base.Update(gameTime);
@@ -96,7 +99,7 @@ namespace Leaf
 
 			//spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.x, (int)leaf.y, leafTexture.Width, leafTexture.Height), Color.White);
 			spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.x, (int)leaf.y, leafTexture.Width, leafTexture.Height), null, Color.White, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
-
+			spriteBatch.Draw(anchorTexture, new Rectangle((int)leaf.anchor.X, (int)leaf.anchor.Y, anchorTexture.Width, anchorTexture.Height), Color.White);
 			//DrawVector(leaf.acc, Color.Red);
 			//DrawVector(leaf.vel, Color.Blue);
 			//DrawVector(leaf.gravity, Color.Black);
@@ -107,7 +110,7 @@ namespace Leaf
 
 		public void DrawVector(PhysicsVector vec, Color color)
 		{
-			spriteBatch.Draw(vectorTexture, new Rectangle((int)leaf.x, (int)leaf.y, (int)(vec.magnitude * 1000), vectorTexture.Height), null, color, (float)vec.direction.val, new Vector2(0, 0), SpriteEffects.None, 0);
+			spriteBatch.Draw(vectorTexture, new Rectangle((int)leaf.x, (int)leaf.y, (int)(vec.magnitude * 20), vectorTexture.Height/2), null, color, (float)vec.direction.val, new Vector2(0, 0), SpriteEffects.None, 0);
 		}
 	}
 }
