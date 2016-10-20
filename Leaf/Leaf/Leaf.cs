@@ -46,7 +46,7 @@ namespace Leaf
 
 			if (tangentMode)
 			{
-				anchor += vel.ConvertToCartesian();
+				anchor += velCart;
 			}
 
 			UpdateAngle();
@@ -56,34 +56,26 @@ namespace Leaf
 		void KeyHandling()
 		{
 			keyHandler = KeyHandler.Get();
-			if (keyHandler.IsKeyHeld(Keys.Up))
-			{
-				// Moves the pendulum anchor point away from the leaf.
-				float distance = 10;
-				anchor.X -= (float)(distance * Math.Cos(angle.val + (Math.PI / 2)));
-				anchor.Y -= (float)(distance * Math.Sin(angle.val + (Math.PI / 2)));
-			}
-			if (keyHandler.IsKeyHeld(Keys.Down))
-			{
-				// Moves the pendulum anchor point towards the leaf.
-				Vector2 currentPos = new Vector2(x, y);
-				double radius = Vector2.Distance(currentPos, anchor);
 
-				if (radius > 50)
-				{
-					float distance = 10;
-					anchor.X += (float)(distance * Math.Cos(angle.val + (Math.PI / 2)));
-					anchor.Y += (float)(distance * Math.Sin(angle.val + (Math.PI / 2)));
-				}
-			}
-			if (keyHandler.IsKeyHeld(Keys.Space))
+			// Logic for determining the distance of the anchor point
+			float anchorDistance = 300; // If no keys are pressed or both keys are pressed
+			if (keyHandler.IsKeyHeld(Keys.Up) && !keyHandler.IsKeyHeld(Keys.Down)) // Moves the pendulum anchor point away from the leaf.
 			{
-				// Provides a bit of a speed boost.
-				vel.magnitude += .1;
+				anchorDistance = 500;
 			}
-			if (keyHandler.IsKeyJustPressed(Keys.Z))
+			if (keyHandler.IsKeyHeld(Keys.Down) && !keyHandler.IsKeyHeld(Keys.Up)) // Moves the pendulum anchor point towards the leaf.
 			{
-				// Flips the leaf.
+				anchorDistance = 100;
+			}
+			anchor.X = x - (float)(anchorDistance * Math.Cos(angle.val + (Math.PI / 2)));
+			anchor.Y = y - (float)(anchorDistance * Math.Sin(angle.val + (Math.PI / 2)));
+
+			if (keyHandler.IsKeyJustPressed (Keys.Space)) // Provides a bit of a speed boost.
+			{
+				vel.magnitude += 3;
+			}
+			if (keyHandler.IsKeyJustPressed(Keys.Z)) // Flips the leaf.
+			{
 				float deltaX = anchor.X - x;
 				float deltaY = anchor.Y - y;
 				anchor.X -= (deltaX * 2);
