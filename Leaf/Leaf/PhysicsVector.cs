@@ -19,15 +19,15 @@ namespace Leaf
 
 		static public PhysicsVector operator + (PhysicsVector vec1, PhysicsVector vec2)
 		{
-			Vector2 cartRes = Vector2.Add(vec1.ConvertToCartesian(), vec2.ConvertToCartesian());
-			double hypotenuse = Math.Sqrt(Math.Pow(cartRes.X, 2) + Math.Pow(cartRes.Y, 2));
-			Radian angle = Math.Atan2(cartRes.Y, cartRes.X);
+			CartesianVector cartRes = vec1.ConvertToCartesian() + vec2.ConvertToCartesian();
+			double hypotenuse = Math.Sqrt(Math.Pow(cartRes.x, 2) + Math.Pow(cartRes.y, 2));
+			Radian angle = Math.Atan2(cartRes.y, cartRes.x);
 			return new PhysicsVector(angle, hypotenuse);
-		} 
+		}
 
-		public Vector2 ConvertToCartesian()
+		public CartesianVector ConvertToCartesian()
 		{
-			return new Vector2((float)(magnitude * Math.Cos(direction.val)), (float)(magnitude * Math.Sin(direction.val))); 
+			return new CartesianVector((magnitude * Math.Cos(direction.val)), (magnitude * Math.Sin(direction.val))); 
 		}
 
 		public void Invert()
