@@ -124,7 +124,7 @@ namespace Leaf
 		void ReduceVelocity()	// Applies a bit of resistance so that the leaf slows down over time.
 		{
 			if (vel.magnitude > maxSpeed)
-				vel.magnitude -= .002;
+				vel.magnitude -= .005;
 		}
 	}
 }

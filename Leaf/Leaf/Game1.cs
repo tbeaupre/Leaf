@@ -23,6 +23,9 @@ namespace Leaf
 		Texture2D vectorTexture;
 		Texture2D anchorTexture;
 
+		const int borderY = 200;
+		const int borderX = 100;
+
 		public Game1()
 		{
 			graphics = new GraphicsDeviceManager(this);
@@ -84,8 +87,31 @@ namespace Leaf
 
 			KeyHandler.Get().UpdateKeyboardHandler();
 			leaf.Update(); // Updates the player's leaf.
+			CheckMapBounds();
 			
 			base.Update(gameTime);
+		}
+
+		public void CheckMapBounds()
+		{
+			int deltaX = (int)leaf.pos.x - (ScreenData.Get().GetFullScreenWidth() - borderX);
+			if (deltaX > 0)
+			{
+				leaf.pos.x -= deltaX;
+				leaf.anchor.x -= deltaX;
+			}
+			if (leaf.pos.x < borderX)
+			{
+				leaf.anchor.x += borderX - leaf.pos.x;
+				leaf.pos.x += borderX - leaf.pos.x;
+			}
+
+			int deltaY = (int)leaf.pos.y - (ScreenData.Get().GetFullScreenHeight() - borderY);
+			if (deltaY > 0)
+			{
+				leaf.pos.y -= deltaY;
+				leaf.anchor.y -= deltaY;
+			}
 		}
 
 		/// <summary>
