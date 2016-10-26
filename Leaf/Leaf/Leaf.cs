@@ -18,6 +18,7 @@ namespace Leaf
 		bool tangentMode = false;
 		public KeyHandler keyHandler;
 
+		double maxSpeed;
 		double radius = 300; // The radius of the pendulum
 		double prevRadius = 0; // the previous radius
 		
@@ -28,6 +29,8 @@ namespace Leaf
 			this.vel = new PhysicsVector(0, 0);
 			this.gravity = new PhysicsVector(Math.PI / 2, .1);
 			UpdateAngle();
+
+			this.maxSpeed = 8;
 		}
 
 		public void Update()
@@ -38,8 +41,6 @@ namespace Leaf
 			{
 				UpdateAcceleration();
 				vel += acc;
-				//vel.magnitude = Math.Sqrt(2 * gravity.magnitude * radius * (1 - Math.Cos((angle.val))));
-				//vel.direction = angle;
 			}
 
 			CartesianVector velCart = vel.ConvertToCartesian();
@@ -55,7 +56,7 @@ namespace Leaf
 			ReduceVelocity();
 		}
 
-		void KeyHandling()
+		void KeyHandling()	// Contains key handling code.
 		{
 			keyHandler = KeyHandler.Get();
 
@@ -90,15 +91,19 @@ namespace Leaf
 			}
 		}
 
-		void UpdateAcceleration()
+		void UpdateAcceleration()	// Calculates the current acceleration of the leaf
 		{
 			PhysicsVector gPerp = new PhysicsVector((Math.PI / 2) + angle.val, gravity.magnitude * Math.Cos(angle.val));
-
 			PhysicsVector tension = new PhysicsVector(gPerp.direction + Math.PI, gPerp.magnitude + (Math.Pow(vel.magnitude, 2) / radius)); // Tension counters the perpendicular vector of gravity
 			acc = tension + gravity;
 		}
 
-		void RadiusCheck()
+		void UpdateAngle()	// Updates the rotation of the leaf based upon its position on the arc
+		{
+			angle = Math.Atan2(anchor.y - pos.y, anchor.x - pos.x) + (Math.PI / 2);
+		}
+
+		void RadiusCheck()	// Checks to see if the leaf is at the correct radius for the arc.
 		{
 			double checkRadius = CartesianVector.Distance(pos, anchor);
 			double tol = .1;
@@ -116,15 +121,10 @@ namespace Leaf
 			}
 		}
 
-		void UpdateAngle()
+		void ReduceVelocity()	// Applies a bit of resistance so that the leaf slows down over time.
 		{
-			angle = Math.Atan2(anchor.y - pos.y, anchor.x - pos.x) + (Math.PI / 2);
-		}
-
-		void ReduceVelocity()
-		{
-			if (vel.magnitude > 0)
-				vel.magnitude -= .001;
+			if (vel.magnitude > maxSpeed)
+				vel.magnitude -= .002;
 		}
 	}
 }
