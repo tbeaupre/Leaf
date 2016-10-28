@@ -17,13 +17,15 @@ namespace Leaf
 		public CartesianVector anchor;
 		bool tangentMode = false;
 		public KeyHandler keyHandler;
+		KeySet keySet;
 
 		double maxSpeed;
 		double radius = 300; // The radius of the pendulum
 		double prevRadius = 0; // the previous radius
 		
-		public Leaf()
+		public Leaf(KeySet keySet)
 		{
+			this.keySet = keySet;
 			this.pos = new CartesianVector((ScreenData.Get().GetFullScreenWidth() / 2) - 300, ScreenData.Get().GetFullScreenHeight() / 4);
 			this.anchor = new CartesianVector(pos.x + 300, pos.y);
 			this.vel = new PhysicsVector(0, 0);
@@ -62,11 +64,11 @@ namespace Leaf
 
 			// Logic for determining the distance of the anchor point
 			radius = 300; // If no keys are pressed or both keys are pressed
-			if (keyHandler.IsKeyHeld(Keys.Up) && !keyHandler.IsKeyHeld(Keys.Down)) // Moves the pendulum anchor point away from the leaf.
+			if (keyHandler.IsKeyHeld(keySet.up) && !keyHandler.IsKeyHeld(keySet.down)) // Moves the pendulum anchor point away from the leaf.
 			{
 				radius = 500;
 			}
-			if (keyHandler.IsKeyHeld(Keys.Down) && !keyHandler.IsKeyHeld(Keys.Up)) // Moves the pendulum anchor point towards the leaf.
+			if (keyHandler.IsKeyHeld(keySet.down) && !keyHandler.IsKeyHeld(keySet.up)) // Moves the pendulum anchor point towards the leaf.
 			{
 				radius = 100;
 			}
@@ -78,11 +80,11 @@ namespace Leaf
 
 			prevRadius = radius;
 
-			if (keyHandler.IsKeyJustPressed (Keys.Space)) // Provides a bit of a speed boost.
+			if (keyHandler.IsKeyJustPressed (keySet.boost)) // Provides a bit of a speed boost.
 			{
 				vel.magnitude += 3;
 			}
-			if (keyHandler.IsKeyJustPressed(Keys.Z)) // Flips the leaf.
+			if (keyHandler.IsKeyJustPressed(keySet.flip)) // Flips the leaf.
 			{
 				double deltaX = anchor.x - pos.x;
 				double deltaY = anchor.y - pos.y;

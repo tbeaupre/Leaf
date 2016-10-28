@@ -18,7 +18,7 @@ namespace Leaf
 	{
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
-		Leaf leaf = new Leaf();
+		Leaf leaf = new Leaf(new KeySet (Keys.Up, Keys.Down, Keys.Left, Keys.Right));
 		Texture2D leafTexture;
 		Texture2D vectorTexture;
 		Texture2D anchorTexture;

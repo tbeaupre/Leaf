@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="CartesianVector.cs" />
     <Compile Include="KeyboardHandler.cs" />
+    <Compile Include="KeySet.cs" />
     <Compile Include="Leaf.cs" />
     <Compile Include="PhysicsVector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
