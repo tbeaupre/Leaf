@@ -48,8 +48,8 @@ namespace Leaf
 		/// </summary>
 		protected override void Initialize()
 		{
-			leaves.Add(new Leaf(new KeySet(Keys.Up, Keys.Down, Keys.Left, Keys.Right)));
-			leaves.Add(new Leaf(new KeySet(Keys.W, Keys.S, Keys.A, Keys.D)));
+			leaves.Add(new Leaf(new KeySet(Keys.Up, Keys.Down, Keys.Left, Keys.Right), Color.GreenYellow));
+			leaves.Add(new Leaf(new KeySet(Keys.W, Keys.S, Keys.A, Keys.D), Color.DarkRed));
 			leaves.RemoveRange(numPlayers, leaves.Count - numPlayers);
 			// TODO: Add your initialization logic here
 			leafTexture = Content.Load<Texture2D>("leaf");
@@ -152,8 +152,8 @@ namespace Leaf
 
 		public void DrawLeaf(Leaf leaf)
 		{
-			spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.pos.x, (int)leaf.pos.y, leafTexture.Width, leafTexture.Height), null, Color.White, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
-			spriteBatch.Draw(anchorTexture, new Rectangle((int)leaf.anchor.x, (int)leaf.anchor.y, anchorTexture.Width, anchorTexture.Height), Color.White);
+			spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.pos.x, (int)leaf.pos.y, leafTexture.Width, leafTexture.Height), null, leaf.color, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
+			spriteBatch.Draw(anchorTexture, new Rectangle((int)leaf.anchor.x, (int)leaf.anchor.y, anchorTexture.Width, anchorTexture.Height), leaf.color);
 
 			//DrawVector(leaf.acc, Color.Red);
 			//DrawVector(leaf.vel, Color.Blue);

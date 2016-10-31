@@ -9,23 +9,26 @@ namespace Leaf
 {
 	public class Leaf
 	{
-		public CartesianVector pos;
+		public CartesianVector pos { get; set; }
 		public Radian angle { get; set; }
-		public PhysicsVector acc;
-		public PhysicsVector vel;
-		public PhysicsVector gravity;
-		public CartesianVector anchor;
-		bool tangentMode = false;
-		public KeyHandler keyHandler;
-		KeySet keySet;
+		public PhysicsVector acc { get; set; }
+		public PhysicsVector vel { get; set; }
+		public PhysicsVector gravity { get; set; }
+		public CartesianVector anchor { get; set; }
+		public KeyHandler keyHandler { get; set; }
+		public Color color { get; set; }
 
+		KeySet keySet;
+		bool tangentMode = false;
 		double maxSpeed;
 		double radius = 300; // The radius of the pendulum
 		double prevRadius = 0; // the previous radius
 		
-		public Leaf(KeySet keySet)
+		public Leaf(KeySet keySet, Color color)
 		{
 			this.keySet = keySet;
+			this.color = color;
+
 			this.pos = new CartesianVector((ScreenData.Get().GetFullScreenWidth() / 2) - 300, ScreenData.Get().GetFullScreenHeight() / 4);
 			this.anchor = new CartesianVector(pos.x + 300, pos.y);
 			this.vel = new PhysicsVector(0, 0);
