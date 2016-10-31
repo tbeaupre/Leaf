@@ -18,7 +18,9 @@ namespace Leaf
 	{
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
-		Leaf leaf = new Leaf(new KeySet (Keys.Up, Keys.Down, Keys.Left, Keys.Right));
+
+		const int numPlayers = 1;
+		List<Leaf> leaves = new List<Leaf>(numPlayers);
 		Texture2D leafTexture;
 		Texture2D vectorTexture;
 		Texture2D anchorTexture;
@@ -46,6 +48,9 @@ namespace Leaf
 		/// </summary>
 		protected override void Initialize()
 		{
+			leaves.Add(new Leaf(new KeySet(Keys.Up, Keys.Down, Keys.Left, Keys.Right)));
+			leaves.Add(new Leaf(new KeySet(Keys.W, Keys.S, Keys.A, Keys.D)));
+			leaves.RemoveRange(numPlayers, leaves.Count - numPlayers);
 			// TODO: Add your initialization logic here
 			leafTexture = Content.Load<Texture2D>("leaf");
 			vectorTexture = Content.Load<Texture2D>("Vector");
@@ -86,31 +91,44 @@ namespace Leaf
 				this.Exit();
 
 			KeyHandler.Get().UpdateKeyboardHandler();
-			leaf.Update(); // Updates the player's leaf.
-			CheckMapBounds();
+			foreach (Leaf leaf in leaves)
+			{
+				leaf.Update(); // Updates the player's leaf.
+				CheckMapBounds(leaf);
+			}
 			
 			base.Update(gameTime);
 		}
 
-		public void CheckMapBounds()
+		public void CheckMapBounds(Leaf leaf)
 		{
 			int deltaX = (int)leaf.pos.x - (ScreenData.Get().GetFullScreenWidth() - borderX);
 			if (deltaX > 0)
 			{
-				leaf.pos.x -= deltaX;
-				leaf.anchor.x -= deltaX;
+				foreach (Leaf xLeaf in leaves)
+				{
+					xLeaf.pos.x -= deltaX;
+					xLeaf.anchor.x -= deltaX;
+				}
 			}
 			if (leaf.pos.x < borderX)
 			{
-				leaf.anchor.x += borderX - leaf.pos.x;
-				leaf.pos.x += borderX - leaf.pos.x;
+				deltaX = borderX - (int)leaf.pos.x;
+				foreach (Leaf xLeaf in leaves)
+				{
+					xLeaf.anchor.x += deltaX;
+					xLeaf.pos.x += deltaX;
+				}
 			}
 
 			int deltaY = (int)leaf.pos.y - (ScreenData.Get().GetFullScreenHeight() - borderY);
 			if (deltaY > 0)
 			{
-				leaf.pos.y -= deltaY;
-				leaf.anchor.y -= deltaY;
+				foreach (Leaf xLeaf in leaves)
+				{
+					xLeaf.pos.y -= deltaY;
+					xLeaf.anchor.y -= deltaY;
+				}
 			}
 		}
 
@@ -123,18 +141,26 @@ namespace Leaf
 			spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 			GraphicsDevice.Clear(Color.CornflowerBlue);
 
-			//spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.x, (int)leaf.y, leafTexture.Width, leafTexture.Height), Color.White);
-			spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.pos.x, (int)leaf.pos.y, leafTexture.Width, leafTexture.Height), null, Color.White, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
-			spriteBatch.Draw(anchorTexture, new Rectangle((int)leaf.anchor.x, (int)leaf.anchor.y, anchorTexture.Width, anchorTexture.Height), Color.White);
-			//DrawVector(leaf.acc, Color.Red);
-			//DrawVector(leaf.vel, Color.Blue);
-			//DrawVector(leaf.gravity, Color.Black);
+			foreach (Leaf leaf in leaves)
+			{
+				DrawLeaf(leaf);
+			}
 
 			base.Draw(gameTime);
 			spriteBatch.End();
 		}
 
-		public void DrawVector(PhysicsVector vec, Color color)
+		public void DrawLeaf(Leaf leaf)
+		{
+			spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.pos.x, (int)leaf.pos.y, leafTexture.Width, leafTexture.Height), null, Color.White, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
+			spriteBatch.Draw(anchorTexture, new Rectangle((int)leaf.anchor.x, (int)leaf.anchor.y, anchorTexture.Width, anchorTexture.Height), Color.White);
+
+			//DrawVector(leaf.acc, Color.Red);
+			//DrawVector(leaf.vel, Color.Blue);
+			//DrawVector(leaf.gravity, Color.Black);
+		}
+
+		public void DrawVector(PhysicsVector vec, Color color, Leaf leaf)
 		{
 			spriteBatch.Draw(vectorTexture, new Rectangle((int)leaf.pos.x, (int)leaf.pos.y, (int)(vec.magnitude * 20), vectorTexture.Height/2), null, color, (float)vec.direction.val, new Vector2(0, 0), SpriteEffects.None, 0);
 		}
