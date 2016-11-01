@@ -19,7 +19,7 @@ namespace Leaf
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
 
-		const int numPlayers = 1;
+		const int numPlayers = 2;
 		List<Leaf> leaves = new List<Leaf>(numPlayers);
 		Texture2D leafTexture;
 		Texture2D vectorTexture;
@@ -27,6 +27,13 @@ namespace Leaf
 
 		const int borderY = 200;
 		const int borderX = 100;
+		int screenX = 0;
+		int screenY = 0;
+		int screenWidth;
+		int maxScreenWidth;
+		int screenHeight;
+		int maxScreenHeight;
+		double screenRatio;
 
 		public Game1()
 		{
@@ -48,6 +55,12 @@ namespace Leaf
 		/// </summary>
 		protected override void Initialize()
 		{
+			screenWidth = ScreenData.Get().GetFullScreenWidth();
+			maxScreenWidth = screenWidth * 2;
+			screenHeight = ScreenData.Get().GetFullScreenHeight();
+			maxScreenHeight = screenHeight * 2;
+			screenRatio = screenWidth / ScreenData.Get().GetFullScreenWidth();
+
 			leaves.Add(new Leaf(new KeySet(Keys.Up, Keys.Down, Keys.Left, Keys.Right), Color.GreenYellow));
 			leaves.Add(new Leaf(new KeySet(Keys.W, Keys.S, Keys.A, Keys.D), Color.DarkRed));
 			leaves.RemoveRange(numPlayers, leaves.Count - numPlayers);
@@ -94,42 +107,92 @@ namespace Leaf
 			foreach (Leaf leaf in leaves)
 			{
 				leaf.Update(); // Updates the player's leaf.
-				CheckMapBounds(leaf);
 			}
-			
+			CheckMapBounds();
+
 			base.Update(gameTime);
 		}
 
-		public void CheckMapBounds(Leaf leaf)
+		public void CheckMapBounds()
 		{
-			int deltaX = (int)leaf.pos.x - (ScreenData.Get().GetFullScreenWidth() - borderX);
-			if (deltaX > 0)
+			int minObjX = screenX + screenWidth/2;
+			int maxObjX = screenX + screenWidth/2;
+			int minObjY = screenY + screenHeight/2;
+			int maxObjY = screenY + screenHeight/2;
+
+			if (screenRatio > 1) // If the screen is larger than normal, then set it back to normal
 			{
-				foreach (Leaf xLeaf in leaves)
+				int deltaScreen = screenWidth - ScreenData.Get().GetFullScreenWidth();
+				if (deltaScreen > 0)
 				{
-					xLeaf.pos.x -= deltaX;
-					xLeaf.anchor.x -= deltaX;
+					screenX += deltaScreen / 2;
+					screenWidth = ScreenData.Get().GetFullScreenWidth();
 				}
-			}
-			if (leaf.pos.x < borderX)
-			{
-				deltaX = borderX - (int)leaf.pos.x;
-				foreach (Leaf xLeaf in leaves)
+				deltaScreen = screenHeight - ScreenData.Get().GetFullScreenHeight();
+				if (deltaScreen > 0)
 				{
-					xLeaf.anchor.x += deltaX;
-					xLeaf.pos.x += deltaX;
+					screenY += deltaScreen / 2;
+					screenHeight = ScreenData.Get().GetFullScreenHeight();
 				}
 			}
 
-			int deltaY = (int)leaf.pos.y - (ScreenData.Get().GetFullScreenHeight() - borderY);
-			if (deltaY > 0)
+			foreach (Leaf leaf in leaves)
 			{
-				foreach (Leaf xLeaf in leaves)
+				if (leaf.pos.x > maxObjX)
+					maxObjX = (int)leaf.pos.x;
+				else if (leaf.pos.x < minObjX)
+					minObjX = (int)leaf.pos.x;
+				if (leaf.pos.y > maxObjY)
+					maxObjY = (int)leaf.pos.y;
+				else if (leaf.pos.y < minObjY)
+					minObjY = (int)leaf.pos.y;
+			}
+
+			// Hard bounds on max and min obj X;
+			if (minObjX < -ScreenData.Get().GetFullScreenWidth())
+				minObjX = -ScreenData.Get().GetFullScreenWidth();
+			if (maxObjX > ScreenData.Get().GetFullScreenWidth() + screenWidth)
+				maxObjX = ScreenData.Get().GetFullScreenWidth() + screenWidth;
+
+
+			if (minObjX < screenX + borderX) // Check to see if there's an object OOB Left
+				screenX = minObjX - borderX; // Correct OOB Left
+			if (maxObjX > screenX + screenWidth - borderX) // Check to see if there's an object OOB Right
+			{	// We need to move the screen to the right
+				if (maxObjX - minObjX > screenWidth - (2 * borderX)) // Check to see if both objects can fit on the screen
+				{   // No, so we need to scale up the screen
+					screenWidth = maxObjX - screenX + borderX; // Correct OOB Right
+				}
+				else // Yes, we can move the screen to the right
 				{
-					xLeaf.pos.y -= deltaY;
-					xLeaf.anchor.y -= deltaY;
+					screenX = maxObjX + borderX - screenWidth; // Correct OOB Right
 				}
 			}
+
+			if (minObjY < screenY + borderY) // Check to see if there's an object OOB Top
+				screenY = minObjY - borderY; // Correct OOB Top
+			if (maxObjY > screenY + screenHeight - borderY) // Check to see if there's an object OOB Bottom
+			{   // We need to move the screen down
+				if (maxObjY - minObjY > screenHeight - (2 * borderY)) // Check to see if both objects can fit on the screen
+				{   // No, so we need to scale up the screen
+					screenHeight = maxObjY - screenY + borderY; // Correct OOB Bottom
+
+					int delta = screenHeight - maxScreenHeight;
+					if (delta > 0) // If we're already stretched too thin, drop the top guy.
+					{
+						screenHeight = maxScreenHeight;
+						screenY += delta;
+					}
+				}
+				else // Yes, we can move the screen down
+				{
+					screenY = maxObjY + borderY - screenHeight; // Correct OOB Bottom
+				}
+			}
+
+			double widthRatio = screenWidth / (double)ScreenData.Get().GetFullScreenWidth();
+			double heightRatio = screenHeight / (double)ScreenData.Get().GetFullScreenHeight();
+			screenRatio = (widthRatio > heightRatio ? widthRatio : heightRatio); // Set to the greater ratio
 		}
 
 		/// <summary>
@@ -152,8 +215,13 @@ namespace Leaf
 
 		public void DrawLeaf(Leaf leaf)
 		{
-			spriteBatch.Draw(leafTexture, new Rectangle((int)leaf.pos.x, (int)leaf.pos.y, leafTexture.Width, leafTexture.Height), null, leaf.color, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
-			spriteBatch.Draw(anchorTexture, new Rectangle((int)leaf.anchor.x, (int)leaf.anchor.y, anchorTexture.Width, anchorTexture.Height), leaf.color);
+			spriteBatch.Draw(leafTexture, 
+				new Rectangle(ScreenX(leaf.pos.x), ScreenY(leaf.pos.y), (int)(leafTexture.Width / screenRatio), (int)(leafTexture.Height / screenRatio)),
+				null, leaf.color, (float)leaf.angle.val, new Vector2(leafTexture.Width / 2, 0), SpriteEffects.None, 0);
+
+			spriteBatch.Draw(anchorTexture,
+				new Rectangle(ScreenX(leaf.anchor.x), ScreenY(leaf.anchor.y), (int)(anchorTexture.Width / screenRatio), (int)(anchorTexture.Height / screenRatio)),
+				leaf.color);
 
 			//DrawVector(leaf.acc, Color.Red);
 			//DrawVector(leaf.vel, Color.Blue);
@@ -162,7 +230,17 @@ namespace Leaf
 
 		public void DrawVector(PhysicsVector vec, Color color, Leaf leaf)
 		{
-			spriteBatch.Draw(vectorTexture, new Rectangle((int)leaf.pos.x, (int)leaf.pos.y, (int)(vec.magnitude * 20), vectorTexture.Height/2), null, color, (float)vec.direction.val, new Vector2(0, 0), SpriteEffects.None, 0);
+			//spriteBatch.Draw(vectorTexture, new Rectangle(leaf.pos.x, leaf.pos.y, (int)(vec.magnitude * 20), vectorTexture.Height/2), null, color, (float)vec.direction.val, new Vector2(0, 0), SpriteEffects.None, 0);
+		}
+
+		public int ScreenX(double val)
+		{
+			return (int)((val - screenX) / screenRatio);
+		}
+
+		public int ScreenY(double val)
+		{
+			return (int)((val - screenY) / screenRatio);
 		}
 	}
 }
